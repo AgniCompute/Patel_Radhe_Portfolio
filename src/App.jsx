@@ -13,16 +13,20 @@ function getAudioContext() {
       audioCtx = new AudioContextClass()
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume()
-  }
   return audioCtx
+}
+
+async function ensureAudioReady() {
+  const ctx = getAudioContext()
+  if (!ctx) return false
+  if (ctx.state === 'suspended') await ctx.resume()
+  return ctx.state === 'running'
 }
 
 function playTypewriterSound(isSpace = false) {
   try {
-    const ctx = getAudioContext()
-    if (!ctx) return
+    const ctx = audioCtx
+    if (!ctx || ctx.state !== 'running') return
 
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
@@ -53,8 +57,8 @@ function playTypewriterSound(isSpace = false) {
 
 function playBellDing() {
   try {
-    const ctx = getAudioContext()
-    if (!ctx) return
+    const ctx = audioCtx
+    if (!ctx || ctx.state !== 'running') return
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sine'
@@ -72,8 +76,8 @@ function playBellDing() {
 
 function playMacStartupChime() {
   try {
-    const ctx = getAudioContext()
-    if (!ctx) return
+    const ctx = audioCtx
+    if (!ctx || ctx.state !== 'running') return
     const notes = [130.81, 196.0, 261.63, 329.63, 392.0]
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator()
@@ -340,19 +344,20 @@ export default function App() {
   }, [])
 
   // When user clicks "Enter Portfolio" from Fog Gateway
-  const handleEnterDomain = () => {
+  const handleEnterDomain = async () => {
+    await ensureAudioReady()
     playMacStartupChime()
     setHasEntered(true)
 
     // Automatically play the full song "Gehra Hua"!
     if (audioRef.current) {
-      audioRef.current.volume = volume / 100
+      audioRef.current.volume = Math.min(volume / 100, 0.72)
       audioRef.current.currentTime = 0
-      audioRef.current.play().then(() => {
+      setTimeout(() => audioRef.current?.play().then(() => {
         setIsPlaying(true)
       }).catch((err) => {
         console.warn('Playback error:', err)
-      })
+      }), 900)
     }
 
     setShowNotification(true)
@@ -1407,7 +1412,7 @@ function DesktopRecordPlayer({ isPlaying, onTogglePlay, trackProgress, onSeek, o
 // PRE-HUB UI: SUBTLE BLACK FOG TYPEWRITER SCREEN
 // ==========================================
 function SubtleBlackFogGateway({ onEnter }) {
-  const fullTitle = 'welcome...to my domain...'
+  const fullTitle = "Namaste, I'm Radhe."
   const fullName = 'Radhe Mayankkumar Patel'
   const fullCredential = 'CPA Candidate 2027  ·  Process Builder  ·  Towson University'
 
@@ -1420,10 +1425,9 @@ function SubtleBlackFogGateway({ onEnter }) {
   const [audioUnlocked, setAudioUnlocked] = useState(false)
 
   // Unlock audio on first pointer touch / click
-  const unlockAudio = () => {
+  const unlockAudio = async () => {
     if (!audioUnlocked) {
-      getAudioContext()
-      setAudioUnlocked(true)
+      setAudioUnlocked(await ensureAudioReady())
     }
   }
 
@@ -1434,6 +1438,8 @@ function SubtleBlackFogGateway({ onEnter }) {
     let credIndex = 0
     let subTimer = null
     let credTimer = null
+    let nameInterval = null
+    let credInterval = null
 
     const titleTimer = setInterval(() => {
       if (titleIndex < fullTitle.length) {
@@ -1446,7 +1452,7 @@ function SubtleBlackFogGateway({ onEnter }) {
         setIsTitleDone(true)
 
         subTimer = setTimeout(() => {
-          const nameInterval = setInterval(() => {
+          nameInterval = setInterval(() => {
             if (nameIndex < fullName.length) {
               const char = fullName[nameIndex]
               setDisplayedName(fullName.slice(0, nameIndex + 1))
@@ -1457,7 +1463,7 @@ function SubtleBlackFogGateway({ onEnter }) {
               setIsNameDone(true)
 
               credTimer = setTimeout(() => {
-                const credInterval = setInterval(() => {
+                credInterval = setInterval(() => {
                   if (credIndex < fullCredential.length) {
                     const char = fullCredential[credIndex]
                     setDisplayedCredential(fullCredential.slice(0, credIndex + 1))
@@ -1480,6 +1486,8 @@ function SubtleBlackFogGateway({ onEnter }) {
       clearInterval(titleTimer)
       if (subTimer) clearTimeout(subTimer)
       if (credTimer) clearTimeout(credTimer)
+      if (nameInterval) clearInterval(nameInterval)
+      if (credInterval) clearInterval(credInterval)
     }
   }, [])
 
@@ -1495,7 +1503,7 @@ function SubtleBlackFogGateway({ onEnter }) {
   }, [onEnter])
 
   return (
-    <div className="black-fog-gateway-root" onClick={unlockAudio}>
+    <div className="black-fog-gateway-root" onPointerDown={unlockAudio}>
       {/* Subtle Animated Black Fog & Mist Layers */}
       <div className="fog-layer fog-layer-1" />
       <div className="fog-layer fog-layer-2" />
@@ -1506,10 +1514,12 @@ function SubtleBlackFogGateway({ onEnter }) {
       <div className="fog-gateway-card">
         <div className="fog-header-row">
           <div className="fog-monogram">
-            <span className="apple-glyph"></span>
+            <span className="culture-monogram">RP</span>
           </div>
           <span className="fog-terminal-tag">SYSTEM // BOOT RADHE_OS</span>
-          <span className="fog-sound-status">🔊 TYPEWRITER AUDIO ACTIVE</span>
+          <span className={`fog-sound-status ${audioUnlocked ? 'is-on' : ''}`}>
+            {audioUnlocked ? 'SOUND READY' : 'TAP TO ENABLE SOUND'}
+          </span>
         </div>
 
         <div className="fog-typewriter-body">
@@ -1521,6 +1531,7 @@ function SubtleBlackFogGateway({ onEnter }) {
             {displayedName}
             {isTitleDone && !isNameDone && <span className="fog-cursor" />}
           </h2>
+          {isTitleDone && <p className="fog-gujarati-name">રાધે પટેલ</p>}
           <p className="fog-credential-line">
             {displayedCredential}
             {isNameDone && !isDone && <span className="fog-cursor" />}
@@ -1532,14 +1543,18 @@ function SubtleBlackFogGateway({ onEnter }) {
           <button
             type="button"
             className="fog-enter-button"
-            onClick={onEnter}
+            onClick={async (event) => {
+              event.stopPropagation()
+              await unlockAudio()
+              await onEnter()
+            }}
             autoFocus
           >
             <span>Enter Portfolio</span>
             <span className="fog-arrow">→</span>
           </button>
           <p className="fog-music-callout">
-            🎵 Full song "Gehra Hua" &amp; Turntable Record Player will start automatically
+            Sound begins gently after you enter. You can pause it anytime.
           </p>
         </div>
 
@@ -2134,6 +2149,7 @@ function SafariAboutApp({ onOpenResume, onOpenProjects, onOpenSpotify }) {
               <div className="avatar-initials">RP</div>
             </div>
             <div className="hero-text">
+              <span className="gujarati-signature">રાધે પટેલ · RADHE_OS</span>
               <span className="hero-badge">Tax Associate &amp; Process Builder</span>
               <h1>Radhe Mayankkumar Patel</h1>
               <p className="hero-bio">

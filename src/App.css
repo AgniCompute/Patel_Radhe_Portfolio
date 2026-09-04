@@ -2111,6 +2111,157 @@
 }
 
 /* ==========================================
+   RADHE_OS 2026 — Contemporary Gujarati Craft
+   A restrained cultural layer built from color,
+   bandhani rhythm, and stepwell geometry.
+   ========================================== */
+:root {
+  --radhe-ink: #10172a;
+  --radhe-ivory: #fff8e8;
+  --radhe-vermilion: #d94b32;
+  --radhe-turmeric: #e6a72d;
+  --radhe-teal: #117c78;
+  --radhe-brass: #b88a44;
+  --radhe-plum: #3b203d;
+  --radhe-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M3 2l17 17-8.2.2-4.6 7.2z' fill='%23fff8e8' stroke='%2310172a' stroke-width='2' stroke-linejoin='round'/%3E%3Ccircle cx='18.6' cy='18.6' r='3.2' fill='%23d94b32' stroke='%23fff8e8' stroke-width='1.4'/%3E%3C/svg%3E") 3 2, auto;
+  --radhe-cursor-action: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l4.2 5.8 7 .9-4.6 5.3 1.3 7-6.5-2.9-6.2 3.5.6-7.1-5.1-4.9 6.9-1.5z' fill='%23d94b32' stroke='%23fff8e8' stroke-width='1.7' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='14.7' r='3' fill='%23e6a72d'/%3E%3C/svg%3E") 16 15, pointer;
+}
+
+html,
+body,
+#root,
+.black-fog-gateway-root,
+.macos-desktop-root {
+  cursor: var(--radhe-cursor);
+}
+
+button,
+a,
+[role='button'],
+.desktop-icon,
+.dock-item,
+.window-header,
+.turntable-scrubber-track,
+.gh-scrubber-bar {
+  cursor: var(--radhe-cursor-action) !important;
+}
+
+.black-fog-gateway-root {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(230, 167, 45, .13), transparent 24%),
+    radial-gradient(circle at 82% 78%, rgba(217, 75, 50, .14), transparent 28%),
+    linear-gradient(145deg, #0b1020 0%, var(--radhe-ink) 56%, var(--radhe-plum) 100%);
+}
+
+.black-fog-gateway-root::before,
+.macos-desktop-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  background-image:
+    radial-gradient(circle, rgba(255,248,232,.72) 1px, transparent 1.5px),
+    linear-gradient(45deg, transparent 48%, rgba(184,138,68,.25) 49%, rgba(184,138,68,.25) 51%, transparent 52%);
+  background-size: 32px 32px, 128px 128px;
+}
+
+.fog-gateway-card {
+  background: rgba(16, 23, 42, .84);
+  border: 1px solid rgba(184, 138, 68, .48);
+  box-shadow: 0 40px 100px rgba(0,0,0,.72), inset 0 1px rgba(255,248,232,.12);
+}
+
+.fog-gateway-card::before,
+.fog-gateway-card::after {
+  content: '';
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-color: var(--radhe-brass);
+  opacity: .65;
+}
+.fog-gateway-card::before { top: 14px; left: 14px; border-top: 1px solid; border-left: 1px solid; }
+.fog-gateway-card::after { right: 14px; bottom: 14px; border-right: 1px solid; border-bottom: 1px solid; }
+
+.fog-monogram {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px 12px 18px 18px;
+  border-color: rgba(230,167,45,.7);
+  color: var(--radhe-turmeric);
+  transform: rotate(45deg);
+}
+.culture-monogram { transform: rotate(-45deg); font: 700 11px/1 var(--mac-mono); letter-spacing: .06em; }
+.fog-terminal-tag { color: rgba(255,248,232,.62); }
+.fog-sound-status { color: #f2c56a; background: rgba(230,167,45,.1); border-color: rgba(230,167,45,.35); }
+.fog-sound-status.is-on { color: #72d6c8; background: rgba(17,124,120,.16); border-color: rgba(114,214,200,.45); }
+.fog-headline { color: var(--radhe-ivory); }
+.fog-name-line { color: var(--radhe-ivory); }
+.fog-gujarati-name {
+  margin: -8px 0 14px;
+  color: #efc26a;
+  font-family: "Nirmala UI", sans-serif;
+  font-size: 16px;
+  letter-spacing: .08em;
+}
+.fog-cursor { background: var(--radhe-vermilion); }
+.fog-enter-button {
+  color: var(--radhe-ivory);
+  background: linear-gradient(135deg, #e15b42, var(--radhe-vermilion));
+  border: 1px solid rgba(255,248,232,.22);
+  box-shadow: 0 12px 28px rgba(217,75,50,.28);
+}
+.fog-enter-button:hover { background: #ea654c; box-shadow: 0 16px 36px rgba(217,75,50,.38); }
+
+.macos-desktop-root {
+  background:
+    radial-gradient(circle at 14% 22%, rgba(230,167,45,.18), transparent 24%),
+    radial-gradient(circle at 86% 78%, rgba(17,124,120,.2), transparent 28%),
+    linear-gradient(145deg, #111b35 0%, #1a2340 48%, #4a2747 100%) !important;
+}
+
+.menubar { border-bottom: 1px solid rgba(184,138,68,.25); }
+.safari-content-wrapper { background: var(--radhe-ivory); }
+.about-hero-section {
+  background:
+    radial-gradient(circle at 90% 18%, rgba(230,167,45,.12), transparent 28%),
+    linear-gradient(135deg, #fffaf0, #f8edd8);
+  border: 1px solid rgba(184,138,68,.26);
+  border-radius: 22px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.about-hero-section::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+  width: 180px;
+  height: 180px;
+  opacity: .12;
+  background: repeating-radial-gradient(circle, var(--radhe-vermilion) 0 2px, transparent 2px 14px);
+}
+.avatar-ring { border-color: var(--radhe-brass); box-shadow: 0 0 0 7px rgba(230,167,45,.1); }
+.avatar-initials { background: linear-gradient(145deg, var(--radhe-ink), var(--radhe-plum)); color: #f2c56a; }
+.gujarati-signature { display: block; color: var(--radhe-teal); font: 700 11px/1.3 var(--mac-mono); letter-spacing: .12em; margin-bottom: 7px; }
+.hero-badge { color: var(--radhe-vermilion); background: rgba(217,75,50,.09); border-color: rgba(217,75,50,.22); }
+.hero-text h1 { color: var(--radhe-ink); font-family: var(--display-serif); }
+.btn-primary { background: var(--radhe-vermilion) !important; border-color: var(--radhe-vermilion) !important; }
+.btn-secondary { color: var(--radhe-ink); border-color: rgba(184,138,68,.52) !important; background: rgba(255,248,232,.7) !important; }
+.about-card { border-color: rgba(184,138,68,.28); background: #fffbf2; }
+.about-card:hover { border-color: var(--radhe-brass); box-shadow: 0 16px 32px rgba(59,32,61,.1); }
+.card-badge { color: var(--radhe-teal); }
+.desktop-turntable-widget { width: 286px; border-color: rgba(184,138,68,.36); background: rgba(16,23,42,.9); }
+.vinyl-center-label { background: radial-gradient(circle, var(--radhe-turmeric), var(--radhe-vermilion)); }
+.turntable-play-toggle { background: var(--radhe-teal); color: white; box-shadow: 0 4px 12px rgba(17,124,120,.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+
+/* ==========================================
    TYPEWRITER GATEWAY SCREEN (PRE-HUB UI)
    ========================================== */
 .typewriter-gateway-root {
@@ -3208,6 +3359,4 @@
     max-width: 320px;
   }
 }
-
-
 
