@@ -2257,6 +2257,38 @@ a,
 .vinyl-center-label { background: radial-gradient(circle, var(--radhe-turmeric), var(--radhe-vermilion)); }
 .turntable-play-toggle { background: var(--radhe-teal); color: white; box-shadow: 0 4px 12px rgba(17,124,120,.35); }
 
+.desktop-icon {
+  touch-action: none;
+  will-change: transform;
+  user-select: none;
+}
+
+.desktop-icon:active {
+  background: rgba(230,167,45,.2);
+  outline: 1px solid rgba(242,197,106,.55);
+}
+
+.desktop-stickie {
+  width: 270px;
+  color: var(--radhe-ink);
+  background:
+    radial-gradient(circle at 92% 14%, rgba(217,75,50,.13), transparent 25%),
+    linear-gradient(145deg, #fff8e8, #f6e5bd);
+  border: 1px solid rgba(184,138,68,.5);
+  border-radius: 14px;
+  transform: rotate(-.6deg);
+  box-shadow: 0 18px 42px rgba(16,23,42,.24);
+}
+
+.stickie-header {
+  color: var(--radhe-vermilion);
+  border-bottom: 1px solid rgba(184,138,68,.3);
+  padding-bottom: 8px;
+}
+
+.stickie-body h3 { font-family: var(--display-serif); color: var(--radhe-ink); font-size: 22px; }
+.stickie-tags span { color: var(--radhe-teal); background: rgba(17,124,120,.09); border-color: rgba(17,124,120,.2); }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
@@ -3359,4 +3391,3 @@ a,
     max-width: 320px;
   }
 }
-

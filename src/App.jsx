@@ -299,7 +299,47 @@ export default function App() {
 
   // Window dragging
   const [dragState, setDragState] = useState(null)
+  const [iconOffsets, setIconOffsets] = useState({})
+  const iconDragRef = useRef(null)
   const desktopRef = useRef(null)
+
+  const handleIconPointerDown = (event, id) => {
+    if (event.button !== 0) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const offset = iconOffsets[id] || { x: 0, y: 0 }
+    iconDragRef.current = { id, startX: event.clientX, startY: event.clientY, originX: offset.x, originY: offset.y, moved: false }
+  }
+
+  const handleIconPointerMove = (event) => {
+    const drag = iconDragRef.current
+    if (!drag) return
+    const x = drag.originX + event.clientX - drag.startX
+    const y = drag.originY + event.clientY - drag.startY
+    if (Math.abs(event.clientX - drag.startX) > 4 || Math.abs(event.clientY - drag.startY) > 4) drag.moved = true
+    setIconOffsets((current) => ({ ...current, [drag.id]: { x, y } }))
+  }
+
+  const handleIconPointerUp = (event) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
+  const handleIconClick = (open) => {
+    if (iconDragRef.current?.moved) {
+      iconDragRef.current = null
+      return
+    }
+    iconDragRef.current = null
+    open()
+  }
+
+  const iconDragProps = (id, open) => ({
+    style: { transform: `translate3d(${iconOffsets[id]?.x || 0}px, ${iconOffsets[id]?.y || 0}px, 0)` },
+    onPointerDown: (event) => handleIconPointerDown(event, id),
+    onPointerMove: handleIconPointerMove,
+    onPointerUp: handleIconPointerUp,
+    onPointerCancel: handleIconPointerUp,
+    onClick: () => handleIconClick(open)
+  })
 
   // Clock ticker
   useEffect(() => {
@@ -984,8 +1024,7 @@ export default function App() {
               <button
                 className="desktop-icon"
                 type="button"
-                onDoubleClick={() => openWindow('resume')}
-                onClick={() => openWindow('resume')}
+                {...iconDragProps('resume', () => openWindow('resume'))}
               >
                 <div className="icon-graphic pdf-icon">
                   <PdfFileIcon />
@@ -996,8 +1035,7 @@ export default function App() {
               <button
                 className="desktop-icon"
                 type="button"
-                onDoubleClick={() => openWindow('finder')}
-                onClick={() => openWindow('finder')}
+                {...iconDragProps('finder', () => openWindow('finder'))}
               >
                 <div className="icon-graphic folder-icon">
                   <FolderIcon />
@@ -1008,8 +1046,7 @@ export default function App() {
               <button
                 className="desktop-icon"
                 type="button"
-                onDoubleClick={() => openWindow('about')}
-                onClick={() => openWindow('about')}
+                {...iconDragProps('about', () => openWindow('about'))}
               >
                 <div className="icon-graphic safari-icon">
                   <SafariAppIcon />
@@ -1020,8 +1057,7 @@ export default function App() {
               <button
                 className="desktop-icon"
                 type="button"
-                onDoubleClick={() => openWindow('spotify')}
-                onClick={() => openWindow('spotify')}
+                {...iconDragProps('spotify', () => openWindow('spotify'))}
               >
                 <div className="icon-graphic spotify-icon">
                   <SpotifyAppIcon />
@@ -1032,8 +1068,7 @@ export default function App() {
               <button
                 className="desktop-icon"
                 type="button"
-                onDoubleClick={() => openWindow('terminal')}
-                onClick={() => openWindow('terminal')}
+                {...iconDragProps('terminal', () => openWindow('terminal'))}
               >
                 <div className="icon-graphic terminal-icon">
                   <TerminalAppIcon />
@@ -1058,7 +1093,7 @@ export default function App() {
             {isStickieOpen && (
               <div className="desktop-stickie">
                 <div className="stickie-header">
-                  <span className="stickie-pin">📌 Note</span>
+                  <span className="stickie-pin">QUICK START</span>
                   <button
                     type="button"
                     className="stickie-close"
@@ -1069,19 +1104,17 @@ export default function App() {
                   </button>
                 </div>
                 <div className="stickie-body">
-                  <h3>Hi, I'm Radhe! 👋</h3>
+                  <h3>Browse the apps</h3>
                   <p>
-                    <strong>Tax Associate &amp; Process Builder</strong>
-                    <br />
-                    Towson University '27 | CPA Candidate
+                    Open any icon to explore my work, story, music, and résumé.
                   </p>
                   <p className="stickie-sub">
-                    Double-click any desktop icon, play with the spinning vinyl turntable, or check out my PDF resume in <em>Preview</em>.
+                    Drag the desktop apps wherever you like. Click an icon to open it, or use the dock below.
                   </p>
                   <div className="stickie-tags">
-                    <span>Tax Compliance</span>
-                    <span>Excel Automation</span>
-                    <span>Towson 3.66 GPA</span>
+                    <span>Drag</span>
+                    <span>Click</span>
+                    <span>Explore</span>
                   </div>
                 </div>
               </div>
