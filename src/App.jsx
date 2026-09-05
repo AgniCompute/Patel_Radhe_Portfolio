@@ -472,7 +472,11 @@ export default function App() {
 
       {/* VIEW 1: CINEMATIC ELEPHANT INTRO */}
       {!hasEntered ? (
-        <CinematicIntro onEnter={handleEnterDomain} />
+        <CinematicIntro
+          onEnter={handleEnterDomain}
+          isPlaying={isPlaying}
+          onToggleMusic={togglePlayMusic}
+        />
       ) : (
         /* VIEW 2: FULL MACOS DESKTOP HUB */
         <div
