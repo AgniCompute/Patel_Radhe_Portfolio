@@ -1,100 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-
-// ==========================================
-// AUDIO ENGINE (Web Audio Synthesis)
-// ==========================================
-let audioCtx = null
-
-function getAudioContext() {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass()
-    }
-  }
-  return audioCtx
-}
-
-async function ensureAudioReady() {
-  const ctx = getAudioContext()
-  if (!ctx) return false
-  if (ctx.state === 'suspended') await ctx.resume()
-  return ctx.state === 'running'
-}
-
-function playTypewriterSound(isSpace = false) {
-  try {
-    const ctx = audioCtx
-    if (!ctx || ctx.state !== 'running') return
-
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    const filter = ctx.createBiquadFilter()
-
-    osc.type = isSpace ? 'triangle' : 'sine'
-    const freq = isSpace ? 320 + Math.random() * 60 : 1100 + Math.random() * 400
-    osc.frequency.setValueAtTime(freq, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.04)
-
-    filter.type = 'bandpass'
-    filter.frequency.value = isSpace ? 550 : 1500
-    filter.Q.value = 2.5
-
-    gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
-
-    osc.connect(filter)
-    filter.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.04)
-  } catch {
-    // Autoplay restrictions handle
-  }
-}
-
-function playBellDing() {
-  try {
-    const ctx = audioCtx
-    if (!ctx || ctx.state !== 'running') return
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(1760, ctx.currentTime) // A6 bell
-    gain.gain.setValueAtTime(0.25, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9)
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.9)
-  } catch {
-    // Autoplay restrictions handle
-  }
-}
-
-function playMacStartupChime() {
-  try {
-    const ctx = audioCtx
-    if (!ctx || ctx.state !== 'running') return
-    const notes = [130.81, 196.0, 261.63, 329.63, 392.0]
-    notes.forEach((freq, idx) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = idx === 0 ? 'triangle' : 'sine'
-      osc.frequency.setValueAtTime(freq, ctx.currentTime)
-      gain.gain.setValueAtTime(0.12, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.8)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(ctx.currentTime + 0.02)
-      osc.stop(ctx.currentTime + 1.8)
-    })
-  } catch {
-    // Autoplay restrictions handle
-  }
-}
+import CinematicIntro from './CinematicIntro.jsx'
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00'
@@ -195,9 +101,11 @@ const spotifyTracks = [
 ]
 
 export default function App() {
-  // Pre-hub Fog Gateway state
-  const [hasEntered, setHasEntered] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
+  // Remember entry for this session.
+  const [hasEntered, setHasEntered] = useState(() => {
+    try { return sessionStorage.getItem('radhe-intro-seen') === 'true' } catch { return false }
+  })
+
 
   // Desktop Wallpapers & Themes
   const [wallpaper, setWallpaper] = useState('sonoma')
@@ -295,7 +203,7 @@ export default function App() {
 
   // Desktop Stickie & Turntable Widget visibility
   const [isStickieOpen, setIsStickieOpen] = useState(true)
-  const [isTurntableOpen, setIsTurntableOpen] = useState(true)
+  const [isTurntableOpen, setIsTurntableOpen] = useState(false)
 
   // Window dragging
   const [dragState, setDragState] = useState(null)
@@ -383,27 +291,9 @@ export default function App() {
     return () => window.removeEventListener('mousedown', handleGlobalClick)
   }, [])
 
-  // When user clicks "Enter Portfolio" from Fog Gateway
-  const handleEnterDomain = async () => {
-    await ensureAudioReady()
-    playMacStartupChime()
+  const handleEnterDomain = () => {
+    try { sessionStorage.setItem('radhe-intro-seen', 'true') } catch { /* Storage may be unavailable. */ }
     setHasEntered(true)
-
-    // Automatically play the full song "Gehra Hua"!
-    if (audioRef.current) {
-      audioRef.current.volume = Math.min(volume / 100, 0.72)
-      audioRef.current.currentTime = 0
-      setTimeout(() => audioRef.current?.play().then(() => {
-        setIsPlaying(true)
-      }).catch((err) => {
-        console.warn('Playback error:', err)
-      }), 900)
-    }
-
-    setShowNotification(true)
-    setTimeout(() => {
-      setShowNotification(false)
-    }, 7000)
   }
 
   // Toggle Music Playback
@@ -562,7 +452,7 @@ export default function App() {
       {/* HTML5 Audio Element for Full Song "Gehra Hua" */}
       <audio
         ref={audioRef}
-        preload="auto"
+        preload="none"
         loop
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
@@ -580,9 +470,9 @@ export default function App() {
         <source src="./gehra_hua.webm" type="audio/webm" />
       </audio>
 
-      {/* VIEW 1: SUBTLE BLACK FOG TYPEWRITER SCREEN */}
+      {/* VIEW 1: CINEMATIC ELEPHANT INTRO */}
       {!hasEntered ? (
-        <SubtleBlackFogGateway onEnter={handleEnterDomain} />
+        <CinematicIntro onEnter={handleEnterDomain} />
       ) : (
         /* VIEW 2: FULL MACOS DESKTOP HUB */
         <div
@@ -592,31 +482,6 @@ export default function App() {
           onMouseUp={handleMouseUp}
           style={{ filter: `brightness(${brightness}%)` }}
         >
-          {/* MACOS NOTIFICATION BANNER: "Please enjoy exploring" */}
-          {showNotification && (
-            <div className="macos-notification-banner" role="alert">
-              <div className="notif-icon">
-                <AppleIcon />
-              </div>
-              <div className="notif-content">
-                <div className="notif-top">
-                  <strong>RadheOS System</strong>
-                  <small>Just now</small>
-                </div>
-                <h4>Welcome to my domain!</h4>
-                <p>Please enjoy exploring.</p>
-              </div>
-              <button
-                type="button"
-                className="notif-close-btn"
-                onClick={() => setShowNotification(false)}
-                aria-label="Dismiss notification"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
           {/* 1. TOP MENUBAR */}
           <header className="menubar" role="banner">
             <div className="menubar-left">
@@ -687,7 +552,7 @@ export default function App() {
                         setActiveMenu(null)
                       }}
                     >
-                      Replay "Welcome to my domain..." Intro
+                      Replay cinematic intro
                     </button>
                     <button
                       type="button"
@@ -1444,161 +1309,6 @@ function DesktopRecordPlayer({ isPlaying, onTogglePlay, trackProgress, onSeek, o
 // ==========================================
 // PRE-HUB UI: SUBTLE BLACK FOG TYPEWRITER SCREEN
 // ==========================================
-function SubtleBlackFogGateway({ onEnter }) {
-  const fullTitle = "Namaste, I'm Radhe."
-  const fullName = 'Radhe Mayankkumar Patel'
-  const fullCredential = 'CPA Candidate 2027  ·  Process Builder  ·  Towson University'
-
-  const [displayedTitle, setDisplayedTitle] = useState('')
-  const [displayedName, setDisplayedName] = useState('')
-  const [displayedCredential, setDisplayedCredential] = useState('')
-  const [isTitleDone, setIsTitleDone] = useState(false)
-  const [isNameDone, setIsNameDone] = useState(false)
-  const [isDone, setIsDone] = useState(false)
-  const [audioUnlocked, setAudioUnlocked] = useState(false)
-
-  // Unlock audio on first pointer touch / click
-  const unlockAudio = async () => {
-    if (!audioUnlocked) {
-      setAudioUnlocked(await ensureAudioReady())
-    }
-  }
-
-  // Three-phase typewriter: title → name → credential
-  useEffect(() => {
-    let titleIndex = 0
-    let nameIndex = 0
-    let credIndex = 0
-    let subTimer = null
-    let credTimer = null
-    let nameInterval = null
-    let credInterval = null
-
-    const titleTimer = setInterval(() => {
-      if (titleIndex < fullTitle.length) {
-        const char = fullTitle[titleIndex]
-        setDisplayedTitle(fullTitle.slice(0, titleIndex + 1))
-        playTypewriterSound(char === ' ' || char === '.')
-        titleIndex++
-      } else {
-        clearInterval(titleTimer)
-        setIsTitleDone(true)
-
-        subTimer = setTimeout(() => {
-          nameInterval = setInterval(() => {
-            if (nameIndex < fullName.length) {
-              const char = fullName[nameIndex]
-              setDisplayedName(fullName.slice(0, nameIndex + 1))
-              playTypewriterSound(char === ' ')
-              nameIndex++
-            } else {
-              clearInterval(nameInterval)
-              setIsNameDone(true)
-
-              credTimer = setTimeout(() => {
-                credInterval = setInterval(() => {
-                  if (credIndex < fullCredential.length) {
-                    const char = fullCredential[credIndex]
-                    setDisplayedCredential(fullCredential.slice(0, credIndex + 1))
-                    playTypewriterSound(char === ' ' || char === '·')
-                    credIndex++
-                  } else {
-                    clearInterval(credInterval)
-                    setIsDone(true)
-                    playBellDing()
-                  }
-                }, 28)
-              }, 200)
-            }
-          }, 40)
-        }, 300)
-      }
-    }, 85)
-
-    return () => {
-      clearInterval(titleTimer)
-      if (subTimer) clearTimeout(subTimer)
-      if (credTimer) clearTimeout(credTimer)
-      if (nameInterval) clearInterval(nameInterval)
-      if (credInterval) clearInterval(credInterval)
-    }
-  }, [])
-
-  // Press Enter key to enter
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter') {
-        onEnter()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onEnter])
-
-  return (
-    <div className="black-fog-gateway-root" onPointerDown={unlockAudio}>
-      {/* Subtle Animated Black Fog & Mist Layers */}
-      <div className="fog-layer fog-layer-1" />
-      <div className="fog-layer fog-layer-2" />
-      <div className="fog-layer fog-layer-3" />
-      <div className="fog-vignette" />
-
-      {/* Center Cinematic Typewriter Card */}
-      <div className="fog-gateway-card">
-        <div className="fog-header-row">
-          <div className="fog-monogram">
-            <span className="culture-monogram">RP</span>
-          </div>
-          <span className="fog-terminal-tag">SYSTEM // BOOT RADHE_OS</span>
-          <span className={`fog-sound-status ${audioUnlocked ? 'is-on' : ''}`}>
-            {audioUnlocked ? 'SOUND READY' : 'TAP TO ENABLE SOUND'}
-          </span>
-        </div>
-
-        <div className="fog-typewriter-body">
-          <h1 className="fog-headline">
-            {displayedTitle}
-            {!isTitleDone && <span className="fog-cursor" />}
-          </h1>
-          <h2 className="fog-name-line">
-            {displayedName}
-            {isTitleDone && !isNameDone && <span className="fog-cursor" />}
-          </h2>
-          {isTitleDone && <p className="fog-gujarati-name">રાધે પટેલ</p>}
-          <p className="fog-credential-line">
-            {displayedCredential}
-            {isNameDone && !isDone && <span className="fog-cursor" />}
-          </p>
-        </div>
-
-        {/* Enter Experience Button */}
-        <div className={`fog-actions ${isDone ? 'visible' : ''}`}>
-          <button
-            type="button"
-            className="fog-enter-button"
-            onClick={async (event) => {
-              event.stopPropagation()
-              await unlockAudio()
-              await onEnter()
-            }}
-            autoFocus
-          >
-            <span>Enter Portfolio</span>
-            <span className="fog-arrow">→</span>
-          </button>
-          <p className="fog-music-callout">
-            Sound begins gently after you enter. You can pause it anytime.
-          </p>
-        </div>
-
-        <div className="fog-card-footer">
-          <span>Towson University • Accounting &amp; Tax Process Automation</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ==========================================
 // WINDOW COMPONENT (macOS Chrome)
 // ==========================================
